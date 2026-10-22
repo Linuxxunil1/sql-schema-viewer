@@ -1,0 +1,13 @@
+services:
+  sql-schema-viewer:
+    build: .
+    container_name: sql-schema-viewer
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      # Fester Wert, damit Sitzungen einen Container-Neustart überleben (z. B. `openssl rand -hex 32`)
+      SESSION_SECRET: "bitte-ändern"
+      # Hinter Nginx Proxy Manager mit HTTPS beide auf "true" setzen
+      TRUST_PROXY: "false"
+      COOKIE_SECURE: "false"

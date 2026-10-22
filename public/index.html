@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SQL Schema Viewer</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<section id="login" class="login hidden">
+  <form id="loginForm" class="login-card" autocomplete="on">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+      <div><h1>SQL Schema Viewer</h1><p>Mit Microsoft SQL Server verbinden</p></div>
+    </div>
+
+    <div class="row">
+      <label class="grow">Server / Host
+        <input name="server" required placeholder="sql01.firma.local oder 10.0.0.5" autocomplete="url">
+      </label>
+      <label class="w-port">Port
+        <input name="port" inputmode="numeric" placeholder="1433">
+      </label>
+    </div>
+    <div class="row">
+      <label class="grow">Instanz <span class="opt">optional</span>
+        <input name="instance" placeholder="z. B. SQLEXPRESS">
+      </label>
+      <label class="grow">Datenbank <span class="opt">optional</span>
+        <input name="database" placeholder="Standard: alle anzeigen">
+      </label>
+    </div>
+
+    <fieldset class="seg">
+      <legend>Authentifizierung</legend>
+      <label><input type="radio" name="authType" value="sql" checked><span>SQL-Server-Login</span></label>
+      <label><input type="radio" name="authType" value="ntlm"><span>Windows (Domäne)</span></label>
+    </fieldset>
+
+    <label id="domainRow" class="hidden">Domäne
+      <input name="domain" placeholder="FIRMA">
+    </label>
+    <div class="row">
+      <label class="grow">Benutzer
+        <input name="user" required autocomplete="username">
+      </label>
+      <label class="grow">Passwort
+        <input name="password" type="password" autocomplete="current-password">
+      </label>
+    </div>
+
+    <div class="checks">
+      <label class="check"><input type="checkbox" name="encrypt" checked> Verbindung verschlüsseln</label>
+      <label class="check"><input type="checkbox" name="trustCert" checked> Serverzertifikat vertrauen</label>
+    </div>
+
+    <p id="loginError" class="error hidden" role="alert"></p>
+    <button type="submit" class="primary" id="loginBtn">Verbinden</button>
+    <p class="hint">Die Zugangsdaten werden nur für diese Sitzung im Server-Speicher gehalten und nicht dauerhaft gespeichert.</p>
+  </form>
+</section>
+
+<!-- ============ APP ============ -->
+<section id="app" class="app hidden">
+  <header class="topbar">
+    <div class="tb-left">
+      <strong class="logo">Schema Viewer</strong>
+      <select id="dbSelect" title="Datenbank"></select>
+      <span id="stats" class="muted"></span>
+    </div>
+    <div class="tb-right">
+      <span id="whoami" class="muted"></span>
+      <button id="logoutBtn" class="ghost">Abmelden</button>
+    </div>
+  </header>
+
+  <aside class="sidebar">
+    <input id="search" type="search" placeholder="Tabelle oder Spalte suchen …">
+    <div class="opts">
+      <label class="check"><input type="checkbox" id="optViews"> Views anzeigen</label>
+      <label class="check"><input type="checkbox" id="optKeysOnly"> Nur Schlüsselspalten</label>
+      <label class="check"><input type="checkbox" id="optIsolated" checked> Tabellen ohne Beziehung</label>
+    </div>
+    <div class="btn-row">
+      <button data-layout="LR" class="ghost sm active">Layout ↔</button>
+      <button data-layout="TB" class="ghost sm">Layout ↕</button>
+    </div>
+    <div class="btn-row">
+      <button id="fitBtn" class="ghost sm">Einpassen</button>
+      <button id="exportBtn" class="ghost sm">SVG-Export</button>
+    </div>
+    <div id="tableList" class="table-list"></div>
+  </aside>
+
+  <main id="viewport" class="viewport">
+    <div id="world" class="world">
+      <svg id="edges" class="edges"></svg>
+      <div id="nodes"></div>
+    </div>
+    <div id="loading" class="loading hidden"><span class="spinner"></span> Lade Schema …</div>
+    <div class="zoom">
+      <button id="zoomIn" title="Vergrößern">+</button>
+      <span id="zoomLbl">100%</span>
+      <button id="zoomOut" title="Verkleinern">−</button>
+    </div>
+    <div id="empty" class="empty hidden">Keine Tabellen gefunden.</div>
+  </main>
+
+  <aside id="details" class="details hidden">
+    <div class="d-head">
+      <div><span id="dSchema" class="muted"></span><h2 id="dName"></h2></div>
+      <button id="dClose" class="ghost sm" aria-label="Schließen">✕</button>
+    </div>
+    <div id="dMeta" class="muted"></div>
+    <button id="previewBtn" class="primary sm">Daten anzeigen (Top 100)</button>
+    <h3>Spalten</h3>
+    <table class="cols"><tbody id="dCols"></tbody></table>
+    <h3>Beziehungen</h3>
+    <ul id="dRels" class="rels"></ul>
+  </aside>
+</section>
+
+<!-- Datenvorschau -->
+<dialog id="previewDlg">
+  <div class="dlg-head"><h2 id="pvTitle"></h2><button class="ghost sm" onclick="previewDlg.close()">✕</button></div>
+  <div class="dlg-body"><div id="pvBody"></div></div>
+</dialog>
+
+<script src="vendor/dagre.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
